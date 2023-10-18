@@ -1,0 +1,69 @@
+package org.ezhitkevich.authorization_service.service.security.impl;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.ezhitkevich.authorization_service.entity.Role;
+import org.ezhitkevich.authorization_service.entity.User;
+import org.ezhitkevich.authorization_service.exception.UserLoginExistsException;
+import org.ezhitkevich.authorization_service.jwt.JwtProvider;
+import org.ezhitkevich.authorization_service.repository.UserRepository;
+import org.ezhitkevich.authorization_service.service.security.RoleService;
+import org.ezhitkevich.authorization_service.service.security.UserService;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Set;
+import java.util.stream.Collectors;
+
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class UserServiceImpl implements UserService {
+
+    private final UserRepository userRepository;
+
+    private final BCryptPasswordEncoder passwordEncoder;
+
+    private final JwtProvider jwtProvider;
+
+    private final RoleService roleService;
+
+    @Override
+    @Transactional
+    public User register(User user) {
+        log.info("Method register in class {} started", getClass().getSimpleName());
+
+        if (userRepository.existsByLogin(user.getLogin())) {
+            throw new UserLoginExistsException(user.getLogin());
+        }
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        Set<Role> roles = user.getRoles().stream()
+                .map(role -> roleService.findRoleByRoleName(role.getRoleName()))
+                .collect(Collectors.toSet());
+        user.setRoles(roles);
+
+        User savedUser = userRepository.save(user);
+        log.info("Method register in class {} finished", getClass().getSimpleName());
+        return savedUser;
+    }
+
+    @Override
+    @Transactional
+    public String getAuthorizationToken(UserDetails user) {
+        log.info("Method get authorization token in class {} started", getClass().getSimpleName());
+
+        String token = jwtProvider.generateToken(user);
+
+        log.info("Method get authorization token in class {} finished", getClass().getSimpleName());
+        return token;
+    }
+
+    @Override
+    @Transactional
+    public boolean userExistByLogin(String login) {
+        return userRepository.existsByLogin(login);
+    }
+}

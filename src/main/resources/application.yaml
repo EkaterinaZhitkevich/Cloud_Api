@@ -1,0 +1,20 @@
+spring:
+  application:
+    name: authorization_service
+  datasource:
+    url: ${DATASOURCE_URL:jdbc:postgresql://localhost:5432/cloud_api}
+    username: ${DATASOURCE_USERNAME:postgres}
+    password: ${DATASOURCE_PASSWORD:12345}
+  jpa:
+    show-sql: true
+    open-in-view: false
+  liquibase:
+    enabled: true
+    change-log: classpath:db/db.changelog-master.yaml
+  cache:
+    cache-names: jwt-tokens
+    caffeine:
+      spec: maximumSize=500, expireAfterAccess=900s
+  config:
+    import: classpath:jwt/jwt.properties
+

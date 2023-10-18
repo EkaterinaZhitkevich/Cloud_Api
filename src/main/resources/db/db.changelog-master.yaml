@@ -1,0 +1,5 @@
+databaseChangeLog:
+  - include:
+      file: db/scripts/001_create_tables_user_role_user_role.sql
+  - include:
+      file: db/scripts/002_insert_into_role_values.sql
