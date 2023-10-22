@@ -1,6 +1,6 @@
 package org.ezhitkevich.authorization_service.repository;
 
-import org.ezhitkevich.authorization_service.entity.User;
+import org.ezhitkevich.authorization_service.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 

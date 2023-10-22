@@ -1,6 +1,6 @@
 package org.ezhitkevich.authorization_service.service.security;
 
-import org.ezhitkevich.authorization_service.entity.User;
+import org.ezhitkevich.authorization_service.model.User;
 import org.ezhitkevich.authorization_service.exception.UserNotFoundException;
 import org.ezhitkevich.authorization_service.repository.UserRepository;
 import org.ezhitkevich.authorization_service.service.security.impl.UserLoginServiceImpl;
@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;

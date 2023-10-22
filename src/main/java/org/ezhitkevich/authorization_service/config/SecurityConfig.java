@@ -1,7 +1,7 @@
 package org.ezhitkevich.authorization_service.config;
 
 import lombok.RequiredArgsConstructor;
-import org.ezhitkevich.authorization_service.jwt.JwtFilter;
+import org.ezhitkevich.authorization_service.jwt.impl.JwtFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -17,7 +17,6 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.authentication.logout.LogoutHandler;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
@@ -54,7 +53,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests((auth) ->
                         auth.requestMatchers("/cloud/login/**").permitAll()
                                 .requestMatchers("/cloud/register/**").permitAll()
-                                .requestMatchers("/cloud/files/**").authenticated()
+                                .requestMatchers("/cloud/file/**").authenticated()
+                                .requestMatchers("/cloud/list").authenticated()
                                 .requestMatchers("cloud/logout").authenticated());
 
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);

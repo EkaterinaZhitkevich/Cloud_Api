@@ -2,14 +2,14 @@ package org.ezhitkevich.authorization_service.service.security.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.ezhitkevich.authorization_service.entity.Role;
-import org.ezhitkevich.authorization_service.entity.User;
 import org.ezhitkevich.authorization_service.exception.UserLoginExistsException;
+import org.ezhitkevich.authorization_service.exception.UserNotFoundException;
 import org.ezhitkevich.authorization_service.jwt.JwtProvider;
+import org.ezhitkevich.authorization_service.model.Role;
+import org.ezhitkevich.authorization_service.model.User;
 import org.ezhitkevich.authorization_service.repository.UserRepository;
 import org.ezhitkevich.authorization_service.service.security.RoleService;
 import org.ezhitkevich.authorization_service.service.security.UserService;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -65,5 +65,11 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public boolean userExistByLogin(String login) {
         return userRepository.existsByLogin(login);
+    }
+
+    @Override
+    public User findUserByLogin(String login) {
+        return userRepository.findByLogin(login)
+                .orElseThrow(() -> new UserNotFoundException(login));
     }
 }

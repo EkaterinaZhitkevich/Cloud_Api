@@ -1,7 +1,7 @@
 package org.ezhitkevich.authorization_service.service.security;
 
-import org.ezhitkevich.authorization_service.entity.Role;
-import org.ezhitkevich.authorization_service.entity.User;
+import org.ezhitkevich.authorization_service.model.Role;
+import org.ezhitkevich.authorization_service.model.User;
 import org.ezhitkevich.authorization_service.service.security.impl.UserDetailsServiceImpl;
 import org.ezhitkevich.authorization_service.service.security.impl.UserLoginServiceImpl;
 import org.junit.jupiter.api.Assertions;

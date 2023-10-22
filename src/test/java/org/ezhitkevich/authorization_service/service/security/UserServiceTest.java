@@ -1,13 +1,12 @@
 package org.ezhitkevich.authorization_service.service.security;
 
-import org.ezhitkevich.authorization_service.entity.Role;
-import org.ezhitkevich.authorization_service.entity.User;
+import org.ezhitkevich.authorization_service.model.Role;
+import org.ezhitkevich.authorization_service.model.User;
 import org.ezhitkevich.authorization_service.exception.UserLoginExistsException;
-import org.ezhitkevich.authorization_service.jwt.JwtProvider;
+import org.ezhitkevich.authorization_service.jwt.impl.JwtProviderImpl;
 import org.ezhitkevich.authorization_service.repository.UserRepository;
 import org.ezhitkevich.authorization_service.service.security.impl.RoleServiceImpl;
 import org.ezhitkevich.authorization_service.service.security.impl.UserServiceImpl;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -40,7 +39,7 @@ public class UserServiceTest {
     RoleServiceImpl roleService;
 
     @Mock
-    JwtProvider jwtProvider;
+    JwtProviderImpl jwtProviderImpl;
 
     @Mock
     BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
@@ -96,7 +95,7 @@ public class UserServiceTest {
 
         String expectedToken = "auth-token";
 
-        when(jwtProvider.generateToken(user)).thenReturn(expectedToken);
+        when(jwtProviderImpl.generateToken(user)).thenReturn(expectedToken);
         String actualToken = userService.getAuthorizationToken(user);
 
         assertEquals(expectedToken, actualToken);

@@ -1,15 +1,13 @@
 package org.ezhitkevich.authorization_service.service.security;
 
-import org.ezhitkevich.authorization_service.entity.Role;
+import org.ezhitkevich.authorization_service.model.Role;
 import org.ezhitkevich.authorization_service.exception.RoleNotFoundException;
 import org.ezhitkevich.authorization_service.repository.RoleRepository;
 import org.ezhitkevich.authorization_service.service.security.impl.RoleServiceImpl;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;

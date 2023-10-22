@@ -1,7 +1,7 @@
 package org.ezhitkevich.authorization_service.service.security.impl;
 
 import lombok.RequiredArgsConstructor;
-import org.ezhitkevich.authorization_service.entity.User;
+import org.ezhitkevich.authorization_service.model.User;
 import org.ezhitkevich.authorization_service.exception.UserNotFoundException;
 import org.ezhitkevich.authorization_service.repository.UserRepository;
 import org.ezhitkevich.authorization_service.service.security.UserLoginService;

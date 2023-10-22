@@ -6,17 +6,14 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.Instant;
-
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CustomResponse {
-
-    @JsonProperty("time_stamp")
-    private Instant instant = Instant.now();
+public class CustomExceptionResponse {
 
     @JsonProperty("message")
     private String message;
+
+    private int id;
 }

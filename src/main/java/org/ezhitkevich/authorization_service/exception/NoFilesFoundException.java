@@ -1,12 +1,12 @@
 package org.ezhitkevich.authorization_service.exception;
 
-public class UserNotFoundException extends CustomException{
+public class NoFilesFoundException extends CustomException {
 
     private static final int EXCEPTION_ID = 5;
 
-    private static final String MESSAGE = "User with login %s not found";
+    private static final String MESSAGE = "No files for user %s found";
 
-    public UserNotFoundException(String login) {
+    public NoFilesFoundException(String login) {
         super(String.format(MESSAGE, login));
     }
 

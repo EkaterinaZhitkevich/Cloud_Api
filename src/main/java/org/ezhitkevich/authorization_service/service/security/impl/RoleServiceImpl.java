@@ -2,7 +2,7 @@ package org.ezhitkevich.authorization_service.service.security.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.ezhitkevich.authorization_service.entity.Role;
+import org.ezhitkevich.authorization_service.model.Role;
 import org.ezhitkevich.authorization_service.exception.RoleNotFoundException;
 import org.ezhitkevich.authorization_service.repository.RoleRepository;
 import org.ezhitkevich.authorization_service.service.security.RoleService;

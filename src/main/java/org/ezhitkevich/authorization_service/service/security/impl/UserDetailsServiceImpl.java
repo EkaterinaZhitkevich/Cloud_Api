@@ -2,7 +2,7 @@ package org.ezhitkevich.authorization_service.service.security.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.ezhitkevich.authorization_service.entity.User;
+import org.ezhitkevich.authorization_service.model.User;
 import org.ezhitkevich.authorization_service.service.security.UserLoginService;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

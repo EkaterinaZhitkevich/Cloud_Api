@@ -1,4 +1,4 @@
-package org.ezhitkevich.authorization_service.jwt;
+package org.ezhitkevich.authorization_service.jwt.impl;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -6,7 +6,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.ezhitkevich.authorization_service.entity.Role;
+import org.ezhitkevich.authorization_service.jwt.JwtProvider;
+import org.ezhitkevich.authorization_service.model.Role;
 import org.ezhitkevich.authorization_service.exception.InvalidJwtTokenException;
 import org.ezhitkevich.authorization_service.properties.JwtProperties;
 import org.springframework.beans.factory.annotation.Value;

@@ -1,16 +1,15 @@
 package org.ezhitkevich.authorization_service.service.security.impl;
 
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.ezhitkevich.authorization_service.exception.InvalidJwtTokenException;
 import org.ezhitkevich.authorization_service.jwt.JwtProvider;
+import org.ezhitkevich.authorization_service.jwt.impl.JwtProviderImpl;
 import org.ezhitkevich.authorization_service.properties.JwtProperties;
 import org.ezhitkevich.authorization_service.service.security.LogoutService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.CacheManager;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 
 @Service

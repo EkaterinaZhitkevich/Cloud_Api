@@ -1,12 +1,9 @@
-package org.ezhitkevich.authorization_service.entity;
+package org.ezhitkevich.authorization_service.model;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,7 +13,6 @@ import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
 
 import java.util.Objects;
-import java.util.Set;
 
 @Entity
 @Getter
@@ -24,7 +20,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(schema = "authorization_service")
+@Table(schema = "cloud_api")
 public class Role implements GrantedAuthority{
 
     public Role(String roleName){
