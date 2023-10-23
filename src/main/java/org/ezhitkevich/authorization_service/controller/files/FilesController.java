@@ -7,7 +7,6 @@ import org.ezhitkevich.authorization_service.dto.ListFileResponseDto;
 import org.ezhitkevich.authorization_service.dto.RequestRenameFileDto;
 import org.ezhitkevich.authorization_service.facade.files.FilesFacade;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -42,7 +41,6 @@ public class FilesController{
     }
 
     @PostMapping( "/file")
-//    @PostMapping( value = "/file", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Void> uploadFile(@RequestParam("filename") String filename, FileDto fileDto) {
         log.info("Method upload file in class {} started", getClass().getSimpleName());
         UserDetails principal = (UserDetails)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -53,7 +51,6 @@ public class FilesController{
     }
 
     @GetMapping( "/file")
-//    @GetMapping(value = "/file", produces = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<FileDto> getFile(@RequestParam("filename") String filename) throws IOException {
         log.info("Method get file in class {} started", getClass().getSimpleName());
         UserDetails principal = (UserDetails)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
