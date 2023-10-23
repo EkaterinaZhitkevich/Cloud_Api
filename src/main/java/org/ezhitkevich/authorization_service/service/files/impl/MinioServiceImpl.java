@@ -8,12 +8,6 @@ import io.minio.MakeBucketArgs;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
 import io.minio.RemoveObjectArgs;
-import io.minio.errors.ErrorResponseException;
-import io.minio.errors.InsufficientDataException;
-import io.minio.errors.InternalException;
-import io.minio.errors.InvalidResponseException;
-import io.minio.errors.ServerException;
-import io.minio.errors.XmlParserException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.ezhitkevich.authorization_service.dto.FileDto;
@@ -29,17 +23,12 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.security.InvalidKeyException;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -61,7 +50,7 @@ public class MinioServiceImpl implements MinioService {
         log.info("Method getAllFilesLimit in class {} started", getClass().getSimpleName());
 
         List<MinioFile> files = minioFileRepository.findAllFilesByUsername(username);
-        if (files.isEmpty()){
+        if (files.isEmpty()) {
             throw new NoFilesFoundException(username);
         }
         List<ListFileResponseDto> listFileResponseDtos = files.stream()
@@ -80,7 +69,7 @@ public class MinioServiceImpl implements MinioService {
     public FileDto getFile(String bucketName, String filename) throws IOException {
         log.info("Method get file in class {} started", getClass().getSimpleName());
 
-        if (!minioFileRepository.findByUserAndFilename(bucketName, filename)){
+        if (!minioFileRepository.findByUserAndFilename(bucketName, filename)) {
             throw new NoFilesFoundException(bucketName);
         }
 
@@ -93,7 +82,7 @@ public class MinioServiceImpl implements MinioService {
                     .object(filename)
                     .build());
 
-           binaryFileString = getBinaryStringFromInputStream(stream);
+            binaryFileString = getBinaryStringFromInputStream(stream);
 
             byte[] digest = MessageDigest.getInstance(ALGORITHM).digest(stream.readAllBytes());
             fileHash = Arrays.toString(digest);
@@ -118,18 +107,13 @@ public class MinioServiceImpl implements MinioService {
         log.info("Method upload file in class {} started", getClass().getSimpleName());
 
         byte[] fileBytes = fileDto.getFile().getBytes();
-        File file = new File(getPreSignedUrl(filename));
-        file.canWrite();
-        file.canRead();
 
-        try (FileOutputStream fileOutputStream = new FileOutputStream(file);
-             FileInputStream fileInputStream = new FileInputStream(file)) {
-
-            fileOutputStream.write(fileBytes);
+        try (InputStream stream = new ByteArrayInputStream(fileBytes)) {
 
             minioClient.putObject(PutObjectArgs.builder()
                     .bucket(bucketName)
-                    .stream(fileInputStream, file.length(), -1)
+                    .object(filename)
+                    .stream(stream, stream.available(), -1)
                     .build());
 
             MinioFile minioFile = MinioFile.builder()
@@ -147,8 +131,8 @@ public class MinioServiceImpl implements MinioService {
 
         } catch (Exception e) {
             log.error("Happened error with upload file. Cause: {}", e.getMessage());
-
-            throw new InvalidFileInputDataException();
+            e.printStackTrace();
+//            throw new InvalidFileInputDataException();
         }
     }
 
@@ -187,8 +171,10 @@ public class MinioServiceImpl implements MinioService {
                             .object(oldFilename)
                             .build())
                     .build());
+            String shortOldFileName = getFilenameFromFullFileName(oldFilename);
+            String shortNewFilename = getExtensionFromFullFilename(newFilename);
 
-            minioFileRepository.updateByFilename(newFilename,oldFilename);
+            minioFileRepository.updateByFilename(shortOldFileName, shortNewFilename);
 
             log.info("Method rename file in class {} finished", getClass().getSimpleName());
 
@@ -199,7 +185,7 @@ public class MinioServiceImpl implements MinioService {
 
     }
 
-    public void createBucket(String bucketName){
+    public void createBucket(String bucketName) {
         try {
             minioClient.makeBucket(MakeBucketArgs.builder()
                     .bucket(bucketName)
@@ -212,7 +198,7 @@ public class MinioServiceImpl implements MinioService {
     public boolean isBucketExist(String bucketName) {
         boolean isBucketExist;
         try {
-             isBucketExist = minioClient.bucketExists(BucketExistsArgs.builder()
+            isBucketExist = minioClient.bucketExists(BucketExistsArgs.builder()
                     .bucket(bucketName)
                     .build());
         } catch (Exception e) {
@@ -220,15 +206,16 @@ public class MinioServiceImpl implements MinioService {
         }
         return isBucketExist;
     }
+
     private final String getPreSignedUrl(String filename) {
-        return "http://localhost:8080/file/".concat(filename);
+        return "http:\\localhost:8080\\cloud\\file".concat(filename);
     }
 
-    private String getFilenameFromFullFileName(String fullFilename){
+    private String getFilenameFromFullFileName(String fullFilename) {
         return fullFilename.substring(0, fullFilename.lastIndexOf('.'));
     }
 
-    private String getExtensionFromFullFilename(String fullFilename){
+    private String getExtensionFromFullFilename(String fullFilename) {
         return fullFilename.substring(fullFilename.lastIndexOf('.'));
     }
 

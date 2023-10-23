@@ -41,7 +41,7 @@ public class FilesController{
         return ResponseEntity.status(HttpStatus.OK).body(files);
     }
 
-    @PostMapping( value = "/file")
+    @PostMapping( "/file")
 //    @PostMapping( value = "/file", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Void> uploadFile(@RequestParam("filename") String filename, FileDto fileDto) {
         log.info("Method upload file in class {} started", getClass().getSimpleName());
@@ -52,7 +52,7 @@ public class FilesController{
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping(value = "/file")
+    @GetMapping( "/file")
 //    @GetMapping(value = "/file", produces = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<FileDto> getFile(@RequestParam("filename") String filename) throws IOException {
         log.info("Method get file in class {} started", getClass().getSimpleName());

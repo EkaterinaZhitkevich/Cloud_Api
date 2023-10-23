@@ -27,8 +27,15 @@ public class GlobalAppExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(handle(e));
     }
 
-    @ExceptionHandler({UserLoginExistsException.class, UserNotFoundException.class})
+    @ExceptionHandler(UserLoginExistsException.class)
     public ResponseEntity<CustomExceptionResponse> userLoginExistExceptionHandler(UserLoginExistsException e) {
+        log.warn(e.getMessage());
+        log.trace(e.getMessage(), e);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(handle(e));
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<CustomExceptionResponse> userNotFoundExceptionHandler(UserNotFoundException e) {
         log.warn(e.getMessage());
         log.trace(e.getMessage(), e);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(handle(e));

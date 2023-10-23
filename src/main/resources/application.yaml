@@ -17,4 +17,10 @@ spring:
       spec: maximumSize=500, expireAfterAccess=900s
   config:
     import: classpath:jwt/jwt.properties
+cors:
+ mapping: ${CORS_MAPPING:/**}
+ methods: ${CORS_METHODS:GET, POST, DELETE, PUT }
+ headers: ${CORS_HEADERS:*}
+ origins: ${CORS_ORIGINS:http://localhost:8081/, http://192.168.0.101:8081/}
+
 

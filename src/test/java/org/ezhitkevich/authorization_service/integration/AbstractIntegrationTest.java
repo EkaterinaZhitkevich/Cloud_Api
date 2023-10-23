@@ -1,13 +1,13 @@
 package org.ezhitkevich.authorization_service.integration;
 
-import io.minio.MinioClient;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.testcontainers.containers.GenericContainer;
+import org.springframework.test.context.jdbc.Sql;
 import org.testcontainers.containers.MinIOContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -29,16 +29,15 @@ public class AbstractIntegrationTest {
                     .withUserName("minio_user")
                     .withPassword("minio_password");
 
-    MinioClient minioClient = MinioClient.builder()
-            .endpoint(minioContainer.getS3URL())
-            .credentials(minioContainer.getUserName(), minioContainer.getPassword())
-            .build();
 
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry){
         registry.add("spring.datasource.url", postgreSQLContainer::getJdbcUrl);
         registry.add("spring.datasource.username", postgreSQLContainer::getUsername);
         registry.add("spring.datasource.password", postgreSQLContainer::getPassword);
+        registry.add("minio.url", minioContainer::getS3URL);
+        registry.add("minio.access.key", minioContainer::getUserName);
+        registry.add("minio.secret.key", minioContainer::getPassword);
     }
 
     @BeforeAll

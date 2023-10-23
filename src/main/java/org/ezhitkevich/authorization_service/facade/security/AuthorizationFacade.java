@@ -8,5 +8,4 @@ public interface AuthorizationFacade {
 
     AuthResponseDto login(UserRequestDto userRequestDto);
 
-    User save(UserRequestDto userRequestDto);
 }

@@ -41,23 +41,5 @@ public class AuthorizationFacadeImpl implements AuthorizationFacade {
         return authResponseDto;
     }
 
-    @Override
-    public User save(UserRequestDto userRequestDto) {
-        log.info("Method save in class {} started", getClass().getSimpleName());
-
-        if (userService.userExistByLogin(userRequestDto.getLogin())){
-            throw new UserLoginExistsException(userRequestDto.getLogin());
-        }
-
-        User user = User.builder()
-                .login(userRequestDto.getLogin())
-                .password(userRequestDto.getPassword())
-                .roles(Set.of(Role.builder().roleName("USER").build()))
-                .build();
-        User registeredUser = userService.register(user);
-
-        log.info("Method save in class {} started", getClass().getSimpleName());
-        return registeredUser;
-    }
 
 }
