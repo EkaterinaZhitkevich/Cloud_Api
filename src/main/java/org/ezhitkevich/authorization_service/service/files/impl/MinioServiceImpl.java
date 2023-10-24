@@ -10,25 +10,18 @@ import io.minio.PutObjectArgs;
 import io.minio.RemoveObjectArgs;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.ezhitkevich.authorization_service.dto.FileDto;
-import org.ezhitkevich.authorization_service.dto.ListFileResponseDto;
 import org.ezhitkevich.authorization_service.exception.InvalidFileInputDataException;
-import org.ezhitkevich.authorization_service.exception.NoFilesFoundException;
+import org.ezhitkevich.authorization_service.model.FileMetadata;
 import org.ezhitkevich.authorization_service.model.MinioFile;
-import org.ezhitkevich.authorization_service.model.User;
-import org.ezhitkevich.authorization_service.repository.MinioFileRepository;
 import org.ezhitkevich.authorization_service.service.files.MinioService;
-import org.ezhitkevich.authorization_service.service.security.UserService;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.MessageDigest;
 import java.util.Arrays;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -38,40 +31,12 @@ public class MinioServiceImpl implements MinioService {
 
     private final MinioClient minioClient;
 
-    private final MinioFileRepository minioFileRepository;
-
-    private final UserService userService;
-
     private static final String ALGORITHM = "SHA-256";
 
-    @Override
-    @Transactional
-    public List<ListFileResponseDto> getAllFilesLimit(String username, Integer limit) {
-        log.info("Method getAllFilesLimit in class {} started", getClass().getSimpleName());
-
-        List<MinioFile> files = minioFileRepository.findAllFilesByUsername(username);
-        if (files.isEmpty()) {
-            throw new NoFilesFoundException(username);
-        }
-        List<ListFileResponseDto> listFileResponseDtos = files.stream()
-                .map(minioFile -> ListFileResponseDto.builder()
-                        .filename(minioFile.getFilename().concat(minioFile.getExtension()))
-                        .size(minioFile.getSize())
-                        .build())
-                .limit(limit).toList();
-
-        log.info("Method getAllFilesLimit in class {} finished", getClass().getSimpleName());
-        return listFileResponseDtos;
-
-    }
 
     @Override
-    public FileDto getFile(String bucketName, String filename) throws IOException {
+    public MinioFile getFile(String bucketName, String filename) throws IOException {
         log.info("Method get file in class {} started", getClass().getSimpleName());
-
-        if (!minioFileRepository.findByUserAndFilename(bucketName, filename)) {
-            throw new NoFilesFoundException(bucketName);
-        }
 
         InputStream stream = null;
         String binaryFileString = null;
@@ -95,18 +60,18 @@ public class MinioServiceImpl implements MinioService {
         } finally {
             stream.close();
         }
-        return FileDto.builder()
-                .file(binaryFileString)
+        return MinioFile.builder()
                 .hash(fileHash)
+                .file(binaryFileString)
                 .build();
     }
 
     @Override
-    @Transactional
-    public void uploadFile(String bucketName, String filename, FileDto fileDto) {
+    public FileMetadata uploadFile(String bucketName, String filename, MinioFile minioFile) {
         log.info("Method upload file in class {} started", getClass().getSimpleName());
 
-        byte[] fileBytes = fileDto.getFile().getBytes();
+        byte[] fileBytes = minioFile.getFile().getBytes();
+        FileMetadata fileMetadata = null;
 
         try (InputStream stream = new ByteArrayInputStream(fileBytes)) {
 
@@ -116,28 +81,24 @@ public class MinioServiceImpl implements MinioService {
                     .stream(stream, stream.available(), -1)
                     .build());
 
-            MinioFile minioFile = MinioFile.builder()
+            fileMetadata = FileMetadata.builder()
                     .filename(getFilenameFromFullFileName(filename))
                     .extension(getExtensionFromFullFilename(filename))
                     .url(getPreSignedUrl(filename))
-                    .hash(fileDto.getHash())
+                    .hash(minioFile.getHash())
                     .build();
 
-            User user = userService.findUserByLogin(bucketName);
-            minioFile.setUser(user);
-            minioFileRepository.save(minioFile);
 
             log.info("Method upload file in class {} finished", getClass().getSimpleName());
+            return fileMetadata;
 
         } catch (Exception e) {
             log.error("Happened error with upload file. Cause: {}", e.getMessage());
-            e.printStackTrace();
-//            throw new InvalidFileInputDataException();
+            throw new InvalidFileInputDataException();
         }
     }
 
     @Override
-    @Transactional
     public void deleteFile(String bucketName, String filename) {
         log.info("Method delete file in class {} started", getClass().getSimpleName());
 
@@ -146,8 +107,6 @@ public class MinioServiceImpl implements MinioService {
                     .bucket(bucketName)
                     .object(filename).build());
 
-            minioFileRepository.deleteByFilenameAndExtension(getFilenameFromFullFileName(filename),
-                    getExtensionFromFullFilename(filename));
 
             log.info("Method delete file in class {} finished", getClass().getSimpleName());
         } catch (Exception e) {
@@ -158,7 +117,6 @@ public class MinioServiceImpl implements MinioService {
     }
 
     @Override
-    @Transactional
     public void renameFile(String bucketName, String oldFilename, String newFilename) {
         log.info("Method rename file in class {} started", getClass().getSimpleName());
 
@@ -171,10 +129,6 @@ public class MinioServiceImpl implements MinioService {
                             .object(oldFilename)
                             .build())
                     .build());
-            String shortOldFileName = getFilenameFromFullFileName(oldFilename);
-            String shortNewFilename = getExtensionFromFullFilename(newFilename);
-
-            minioFileRepository.updateByFilename(shortOldFileName, shortNewFilename);
 
             log.info("Method rename file in class {} finished", getClass().getSimpleName());
 

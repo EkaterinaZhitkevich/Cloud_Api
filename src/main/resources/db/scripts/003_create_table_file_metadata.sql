@@ -2,7 +2,7 @@
 
 --changeset Zhitkevich.EYU:3
 
-create table if not exists cloud_api.minio_file(
+create table if not exists cloud_api.file_metadata(
     id bigserial primary key,
     file_uuid uuid,
     filename varchar,

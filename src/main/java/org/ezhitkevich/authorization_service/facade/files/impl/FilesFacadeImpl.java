@@ -5,14 +5,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.ezhitkevich.authorization_service.dto.FileDto;
 import org.ezhitkevich.authorization_service.dto.ListFileResponseDto;
 import org.ezhitkevich.authorization_service.dto.RequestRenameFileDto;
-import org.ezhitkevich.authorization_service.exception.NoFilesFoundException;
 import org.ezhitkevich.authorization_service.facade.files.FilesFacade;
-import org.ezhitkevich.authorization_service.service.files.MinioService;
+import org.ezhitkevich.authorization_service.model.FileMetadata;
+import org.ezhitkevich.authorization_service.model.MinioFile;
+import org.ezhitkevich.authorization_service.service.files.FilesService;
 import org.springframework.stereotype.Component;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 
 @Component
@@ -20,42 +19,47 @@ import java.util.List;
 @Slf4j
 public class FilesFacadeImpl implements FilesFacade {
 
-    private final MinioService minioService;
+    private final FilesService filesService;
 
     @Override
     public List<ListFileResponseDto> getAllFilesLimit(String userLogin, Integer limit) {
         log.info("Method get all files limit in class {} started", getClass().getSimpleName());
 
-        if (!minioService.isBucketExist(userLogin)){
-            throw new NoFilesFoundException(userLogin);
-        }
-        List<ListFileResponseDto> filesLimit = minioService.getAllFilesLimit(userLogin, limit);
+
+        List<FileMetadata> filesLimit = filesService.getAllFilesLimit(userLogin, limit);
+        List<ListFileResponseDto> fileResponseDtos = filesLimit.stream().map(fileMetadata -> ListFileResponseDto.builder()
+                .filename(fileMetadata.getFilename().concat(fileMetadata.getExtension()))
+                .size(fileMetadata.getSize())
+                .build()).toList();
 
         log.info("Method get all files limit in class {} finished", getClass().getSimpleName());
-        return filesLimit;
+        return fileResponseDtos;
     }
 
     @Override
     public FileDto getFile(String userLogin, String filename) throws IOException {
         log.info("Method get file in class {} started", getClass().getSimpleName());
 
-        if (!minioService.isBucketExist(userLogin)){
-            throw new NoFilesFoundException(userLogin);
-        }
-        FileDto file = minioService.getFile(userLogin, filename);
+        MinioFile file = filesService.getFile(userLogin, filename);
+        FileDto fileDto = FileDto.builder()
+                .file(file.getFile())
+                .hash(file.getHash())
+                .build();
 
         log.info("Method get file in class {} finished", getClass().getSimpleName());
-        return file;
+        return fileDto;
     }
 
     @Override
     public void uploadFile(String userLogin, String filename, FileDto fileDto) {
         log.info("Method upload file in class {} started", getClass().getSimpleName());
 
-        if (!minioService.isBucketExist(userLogin)){
-             minioService.createBucket(userLogin);
-        }
-        minioService.uploadFile(userLogin,filename,fileDto);
+        MinioFile file = MinioFile.builder()
+                .file(fileDto.getFile())
+                .hash(fileDto.getHash())
+                .build();
+        filesService.uploadFile(userLogin, filename, file);
+
         log.info("Method upload file in class {} finished", getClass().getSimpleName());
     }
 
@@ -63,7 +67,7 @@ public class FilesFacadeImpl implements FilesFacade {
     public void deleteFile(String userLogin, String filename) {
         log.info("Method delete file in class {} started", getClass().getSimpleName());
 
-        minioService.deleteFile(userLogin, filename);
+        filesService.deleteFile(userLogin, filename);
 
         log.info("Method delete file in class {} finished", getClass().getSimpleName());
     }
@@ -72,7 +76,7 @@ public class FilesFacadeImpl implements FilesFacade {
     public void renameFile(String userLogin, String oldFilename, RequestRenameFileDto renameFileDto) {
         log.info("Method rename file in class {} started", getClass().getSimpleName());
 
-        minioService.renameFile(userLogin, oldFilename, renameFileDto.getNewFileName());
+        filesService.renameFile(userLogin, oldFilename, renameFileDto.getNewFileName());
 
         log.info("Method rename file in class {} finished", getClass().getSimpleName());
     }

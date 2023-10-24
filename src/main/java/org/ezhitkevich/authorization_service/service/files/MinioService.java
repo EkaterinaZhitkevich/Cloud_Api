@@ -1,19 +1,15 @@
 package org.ezhitkevich.authorization_service.service.files;
 
-import org.ezhitkevich.authorization_service.dto.FileDto;
-import org.ezhitkevich.authorization_service.dto.ListFileResponseDto;
+import org.ezhitkevich.authorization_service.model.FileMetadata;
+import org.ezhitkevich.authorization_service.model.MinioFile;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.List;
 
 public interface MinioService {
 
-    List<ListFileResponseDto> getAllFilesLimit(String username, Integer limit);
+    MinioFile getFile(String bucketName, String filename) throws IOException;
 
-    FileDto getFile(String bucketName, String filename) throws IOException;
-
-    void uploadFile(String bucketName, String filename, FileDto fileDto);
+    FileMetadata uploadFile(String bucketName, String filename, MinioFile minioFile);
 
    void deleteFile(String bucketName, String filename);
 
