@@ -27,6 +27,8 @@ public class FilesServiceImpl implements FilesService {
 
     private final UserService userService;
 
+    private static final String URL = "http:\\localhost:8080\\cloud\\file";
+
     @Override
     @Transactional
     public List<FileMetadata> getAllFilesLimit(String username, Integer limit) {
@@ -122,7 +124,7 @@ public class FilesServiceImpl implements FilesService {
         return fullFilename.substring(fullFilename.lastIndexOf('.'));
     }
 
-    private final String getPreSignedUrl(String filename) {
-        return "http:\\localhost:8080\\cloud\\file".concat(filename);
+    private String getPreSignedUrl(String filename) {
+        return URL.concat(filename);
     }
 }
