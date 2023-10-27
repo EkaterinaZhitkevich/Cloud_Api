@@ -66,10 +66,16 @@ public class FilesServiceImpl implements FilesService {
             minioService.createBucket(bucketName);
         }
 
-        FileMetadata fileMetadata = minioService.uploadFile(bucketName, filename, minioFile);
+        FileMetadata fileMetadata = FileMetadata.builder()
+                .filename(getFilenameFromFullFileName(filename))
+                .extension(getExtensionFromFullFilename(filename))
+                .url(getPreSignedUrl(filename))
+                .hash(minioFile.getHash())
+                .build();
         User user = userService.findUserByLogin(bucketName);
         fileMetadata.setUser(user);
         fileRepository.save(fileMetadata);
+        minioService.uploadFile(bucketName, filename, minioFile);
 
         log.info("Method upload file in class {} finished", getClass().getSimpleName());
     }
@@ -83,9 +89,9 @@ public class FilesServiceImpl implements FilesService {
             throw new NoFilesFoundException(bucketName);
         }
 
-        minioService.deleteFile(bucketName, filename);
         fileRepository.deleteByFilenameAndExtension(getFilenameFromFullFileName(filename),
                 getExtensionFromFullFilename(filename));
+        minioService.deleteFile(bucketName, filename);
 
         log.info("Method delete file in class {} finished", getClass().getSimpleName());
     }
@@ -101,8 +107,8 @@ public class FilesServiceImpl implements FilesService {
 
         String shortOldFileName = getFilenameFromFullFileName(oldFilename);
         String shortNewFilename = getExtensionFromFullFilename(newFilename);
-
         fileRepository.updateByFilename(shortOldFileName, shortNewFilename);
+        minioService.renameFile(bucketName, oldFilename, newFilename);
 
         log.info("Method rename file in class {} finished", getClass().getSimpleName());
     }
@@ -113,5 +119,9 @@ public class FilesServiceImpl implements FilesService {
 
     private String getExtensionFromFullFilename(String fullFilename) {
         return fullFilename.substring(fullFilename.lastIndexOf('.'));
+    }
+
+    private final String getPreSignedUrl(String filename) {
+        return "http:\\localhost:8080\\cloud\\file".concat(filename);
     }
 }

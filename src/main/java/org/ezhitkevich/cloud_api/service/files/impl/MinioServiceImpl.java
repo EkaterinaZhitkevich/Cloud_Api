@@ -71,10 +71,8 @@ public class MinioServiceImpl implements MinioService {
     }
 
     @Override
-    public FileMetadata uploadFile(String bucketName, String filename, MinioFile minioFile) {
+    public void uploadFile(String bucketName, String filename, MinioFile minioFile) {
         log.info("Method upload file in class {} started", getClass().getSimpleName());
-
-        FileMetadata fileMetadata = null;
 
         try (InputStream stream = new FileInputStream(minioFile.getResource().getFile())) {
 
@@ -84,16 +82,7 @@ public class MinioServiceImpl implements MinioService {
                     .stream(stream, stream.available(), -1)
                     .build());
 
-            fileMetadata = FileMetadata.builder()
-                    .filename(getFilenameFromFullFileName(filename))
-                    .extension(getExtensionFromFullFilename(filename))
-                    .url(getPreSignedUrl(filename))
-                    .hash(minioFile.getHash())
-                    .build();
-
-
             log.info("Method upload file in class {} finished", getClass().getSimpleName());
-            return fileMetadata;
 
         } catch (Exception e) {
             log.error("Happened error with upload file. Cause: {}", e.getMessage());
@@ -162,18 +151,6 @@ public class MinioServiceImpl implements MinioService {
             throw new RuntimeException(e);
         }
         return isBucketExist;
-    }
-
-    private final String getPreSignedUrl(String filename) {
-        return "http:\\localhost:8080\\cloud\\file".concat(filename);
-    }
-
-    private String getFilenameFromFullFileName(String fullFilename) {
-        return fullFilename.substring(0, fullFilename.lastIndexOf('.'));
-    }
-
-    private String getExtensionFromFullFilename(String fullFilename) {
-        return fullFilename.substring(fullFilename.lastIndexOf('.'));
     }
 
     private String getBinaryStringFromInputStream(InputStream stream) throws IOException {

@@ -9,7 +9,7 @@ public interface MinioService {
 
     MinioFile getFile(String bucketName, String filename) throws IOException;
 
-    FileMetadata uploadFile(String bucketName, String filename, MinioFile minioFile);
+    void uploadFile(String bucketName, String filename, MinioFile minioFile);
 
    void deleteFile(String bucketName, String filename);
 

@@ -9,13 +9,17 @@ import org.ezhitkevich.cloud_api.dto.request.UserRequestDto;
 import org.ezhitkevich.cloud_api.facade.files.FilesFacade;
 import org.ezhitkevich.cloud_api.facade.security.AuthorizationFacade;
 import org.ezhitkevich.cloud_api.facade.security.RegistrationFacade;
+import org.ezhitkevich.cloud_api.model.MinioFile;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -31,6 +35,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -128,13 +133,12 @@ public class CloudApiIntegrationTest extends AbstractIntegrationTest {
     public void uploadFileShouldSuccessfullyReturnOk() throws Exception {
         String filepath = "src/test/resources/file2.txt";
         String filename = filename(filepath);
-        FileRequestDto fileRequestDto = fileDto(filename);
+        MinioFile minioFile = minioFile(filename);
+        MockMultipartFile file = new MockMultipartFile(filename, minioFile.getResource().getInputStream());
 
-        mockMvc.perform(post("/cloud/file")
-                        .param("filename", filename)
-                        .header(AUTHORIZATION_HEADER, authToken)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(new ObjectMapper().writeValueAsString(fileRequestDto)))
+        mockMvc.perform(multipart("/cloud/file")
+                        .file(file)
+                        .param("filename", filename))
                 .andExpect(status().isOk());
     }
 
@@ -143,7 +147,7 @@ public class CloudApiIntegrationTest extends AbstractIntegrationTest {
 
         String filePath = filePaths()[0];
         String filename = filename(filePath);
-        FileRequestDto fileRequestDto = fileDto(filePath);
+        MinioFile minioFile = minioFile(filePath);
 
         MvcResult mvcResult = mockMvc.perform(get("/cloud/file")
                         .queryParam("filename", filename)
@@ -153,10 +157,10 @@ public class CloudApiIntegrationTest extends AbstractIntegrationTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andReturn();
 
-        FileRequestDto actFileRequestDto = objectMapper.readValue(mvcResult.getResponse().getContentAsString(),
-                objectMapper.getTypeFactory().constructType(FileRequestDto.class));
+        MinioFile actMinioFile = objectMapper.readValue(mvcResult.getResponse().getContentAsString(),
+                objectMapper.getTypeFactory().constructType(MinioFile.class));
 
-        assertEquals(fileRequestDto, actFileRequestDto);
+        assertEquals(minioFile, actMinioFile);
     }
 
 
@@ -199,14 +203,19 @@ public class CloudApiIntegrationTest extends AbstractIntegrationTest {
     }
 
 
-    private void insertMinioFiles() {
-        List<FileRequestDto> fileRequestDtos = Arrays.stream(filePaths())
-                .map(this::fileDto).toList();
-        filesFacade.uploadFile(USERNAME, filename(filePaths()[0]), fileRequestDtos.get(0));
-        filesFacade.uploadFile(USERNAME, filename(filePaths()[1]), fileRequestDtos.get(1));
+
+    private void insertMinioFiles() throws IOException {
+        List<MinioFile> minioFiles = Arrays.stream(filePaths())
+                .map(this::minioFile).toList();
+        MultipartFile file = new MockMultipartFile(minioFiles.get(0).getResource().getFilename(),
+                minioFiles.get(0).getResource().getInputStream());
+        MultipartFile img = new MockMultipartFile(minioFiles.get(1).getResource().getFilename(),
+                minioFiles.get(1).getResource().getInputStream());
+        filesFacade.uploadFile(USERNAME, filename(filePaths()[0]), file);
+        filesFacade.uploadFile(USERNAME, filename(filePaths()[1]), img);
     }
 
-    private FileRequestDto fileDto(String filePath) {
+    private MinioFile minioFile(String filePath) {
         File file = new File(filePath);
         String algorithm = "SHA-256";
         StringBuilder binaryFile = new StringBuilder();
@@ -224,8 +233,9 @@ public class CloudApiIntegrationTest extends AbstractIntegrationTest {
         } catch (IOException | NoSuchAlgorithmException e) {
             fail();
         }
-        return FileRequestDto.builder()
-                .file(binaryFile.toString())
+        return MinioFile.builder()
+                .resource(new ClassPathResource("classpath:file.txt"))
+                .binaryStringFile(binaryFile.toString())
                 .hash(Arrays.toString(digest))
                 .build();
     }
