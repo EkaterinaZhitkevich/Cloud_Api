@@ -33,8 +33,7 @@ public class FilesController{
     @GetMapping("/list")
     public ResponseEntity<List<ListFileResponseDto>> getAllFilesLimit(@RequestParam("limit") Integer limit){
         log.info("Method get all files in class {} started", getClass().getSimpleName());
-        UserDetails principal = (UserDetails)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String username = principal.getUsername();
+        String username = (String)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         List<ListFileResponseDto> files = filesFacade.getAllFilesLimit(username, limit);
         log.info("Method get all files in class {} finished", getClass().getSimpleName());
         return ResponseEntity.status(HttpStatus.OK).body(files);
@@ -43,8 +42,7 @@ public class FilesController{
     @PostMapping( "/file")
     public ResponseEntity<Void> uploadFile(@RequestParam("filename") String filename, FileDto fileDto) {
         log.info("Method upload file in class {} started", getClass().getSimpleName());
-        UserDetails principal = (UserDetails)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String username = principal.getUsername();
+        String username = (String)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         filesFacade.uploadFile(username,filename, fileDto);
         log.info("Method upload file in class {} finished", getClass().getSimpleName());
         return ResponseEntity.ok().build();
@@ -53,8 +51,7 @@ public class FilesController{
     @GetMapping( "/file")
     public ResponseEntity<FileDto> getFile(@RequestParam("filename") String filename) throws IOException {
         log.info("Method get file in class {} started", getClass().getSimpleName());
-        UserDetails principal = (UserDetails)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String username = principal.getUsername();
+        String username = (String)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         FileDto file = filesFacade.getFile(username, filename);
         log.info("Method get file in class {} finished", getClass().getSimpleName());
         return ResponseEntity.ok(file);
@@ -64,8 +61,7 @@ public class FilesController{
     public ResponseEntity<Void> renameFile(@RequestParam("filename") String oldFilename,
                                            @RequestBody RequestRenameFileDto renameFileDto){
         log.info("Method rename file in class {} started", getClass().getSimpleName());
-        UserDetails principal = (UserDetails)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String username = principal.getUsername();
+        String username = (String)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         filesFacade.renameFile(username, oldFilename, renameFileDto);
         log.info("Method rename file in class {} finished", getClass().getSimpleName());
         return ResponseEntity.ok().build();
@@ -74,8 +70,7 @@ public class FilesController{
     @DeleteMapping("/file")
     public ResponseEntity<Void> deleteFile(@RequestParam("filename") String filename){
         log.info("Method delete file in class {} started", getClass().getSimpleName());
-        UserDetails principal = (UserDetails)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String username = principal.getUsername();
+        String username = (String)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         filesFacade.deleteFile(username, filename);
         log.info("Method delete file in class {} finished", getClass().getSimpleName());
         return ResponseEntity.ok().build();

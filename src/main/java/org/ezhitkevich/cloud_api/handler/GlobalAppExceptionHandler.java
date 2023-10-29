@@ -45,7 +45,7 @@ public class GlobalAppExceptionHandler {
     public ResponseEntity<CustomExceptionResponse> noFilesFoundExceptionHandler(NoFilesFoundException e){
         log.warn(e.getMessage());
         log.trace(e.getMessage(), e);
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(handle(e));
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(handle(e));
     }
 
     @ExceptionHandler(InvalidFileInputDataException.class)

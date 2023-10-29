@@ -21,6 +21,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Enumeration;
 import java.util.List;
 
 @Component
@@ -44,7 +45,7 @@ public class JwtFilter extends OncePerRequestFilter {
         log.info("Jwt filter processing started");
         try {
 
-            String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+            String authHeader = request.getHeader(jwtProperties.getHeader());
 
             if (authHeader != null && authHeader.startsWith(jwtProperties.getTokenType())) {
                 String jwt = authHeader.substring(jwtProperties.getTokenType().length());
