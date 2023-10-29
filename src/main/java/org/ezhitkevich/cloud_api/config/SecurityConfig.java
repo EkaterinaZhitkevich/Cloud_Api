@@ -46,10 +46,6 @@ public class SecurityConfig {
                 .sessionManagement(management ->
                         management.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(daoAuthenticationProvider())
-//                .logout((logout) -> logout.logoutUrl("/cloud/logout").permitAll()
-//                        .disable())
-//                        .logoutSuccessUrl("/cloud/login?logout").permitAll()
-//                        .addLogoutHandler(logoutHandler))
                 .authorizeHttpRequests((auth) ->
                         auth.requestMatchers("/cloud/login/**").permitAll()
                                 .requestMatchers("/cloud/register/**").permitAll()
