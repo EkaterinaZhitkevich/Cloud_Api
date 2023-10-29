@@ -18,11 +18,13 @@ public class JwtProperties {
 
     private String tokenType;
 
+    private String header;
     @ConstructorBinding
-    public JwtProperties(String secret, Duration lifetime, String tokenType) {
+    public JwtProperties(String secret, Duration lifetime, String tokenType, String header) {
      this.secret = secret;
      this.lifetime = lifetime;
      this.tokenType = tokenType;
+     this.header = header;
     }
 }
 

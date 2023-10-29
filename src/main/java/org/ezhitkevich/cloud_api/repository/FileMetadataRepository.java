@@ -15,7 +15,7 @@ public interface FileMetadataRepository extends JpaRepository<FileMetadata, Long
     @Query("update FileMetadata m set  m.filename =:newFilename where m.filename =:oldFilename")
     void updateByFilename(String newFilename, String oldFilename);
 
-    @Query("from FileMetadata join User u where u.login = :username")
+    @Query("from FileMetadata fm join fm.user u where u.login = :username")
     List<FileMetadata> findAllFilesByUsername(String username);
 
     @Query("from FileMetadata m join User u where u.login =:username and m.filename =:filename")

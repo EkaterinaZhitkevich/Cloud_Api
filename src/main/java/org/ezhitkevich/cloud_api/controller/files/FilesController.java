@@ -36,15 +36,14 @@ public class FilesController{
     @GetMapping("/list")
     public ResponseEntity<List<ListFileResponseDto>> getAllFilesLimit(@RequestParam("limit") Integer limit){
         log.info("Method get all files in class {} started", getClass().getSimpleName());
-        UserDetails principal = (UserDetails)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String username = principal.getUsername();
+        String username = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         List<ListFileResponseDto> files = filesFacade.getAllFilesLimit(username, limit);
         log.info("Method get all files in class {} finished", getClass().getSimpleName());
         return ResponseEntity.status(HttpStatus.OK).body(files);
     }
 
     @PostMapping( value = "/file", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<Void> uploadFile(@RequestParam("filename") String filename, @RequestPart MultipartFile file) {
+    public ResponseEntity<Void> uploadFile(@RequestParam("filename") String filename, MultipartFile file) {
         log.info("Method upload file in class {} started", getClass().getSimpleName());
         UserDetails principal = (UserDetails)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String username = principal.getUsername();

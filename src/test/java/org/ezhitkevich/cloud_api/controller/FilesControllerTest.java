@@ -3,8 +3,8 @@ package org.ezhitkevich.cloud_api.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ezhitkevich.cloud_api.controller.files.FilesController;
 import org.ezhitkevich.cloud_api.dto.request.FileRequestDto;
-import org.ezhitkevich.cloud_api.dto.response.ListFileResponseDto;
 import org.ezhitkevich.cloud_api.dto.request.RequestRenameFileDto;
+import org.ezhitkevich.cloud_api.dto.response.ListFileResponseDto;
 import org.ezhitkevich.cloud_api.exception.InvalidFileInputDataException;
 import org.ezhitkevich.cloud_api.exception.NoFilesFoundException;
 import org.ezhitkevich.cloud_api.facade.files.FilesFacade;
@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
@@ -27,7 +28,9 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.ConnectException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -109,29 +112,30 @@ public class FilesControllerTest extends AbstractControllerTest {
     public void uploadFileShouldSuccessfullyReturnOk() throws Exception {
         String filename = filename();
         String username = "user";
-        FileRequestDto fileRequestDto = fileDto();
+
+        MockMultipartFile file = mockMultipartFile();
 
         mockMvc.perform(post("/cloud/file")
                         .param("filename", filename)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(new ObjectMapper().writeValueAsString(fileRequestDto)))
+                        .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
+                        .content(new ObjectMapper().writeValueAsString(file)))
                 .andExpect(status().isOk());
 
-        verify(filesFacade, times(1)).uploadFile(anyString(), anyString(), any(FileRequestDto.class));
+        verify(filesFacade, times(1)).uploadFile(anyString(), anyString(), any(MockMultipartFile.class));
     }
 
     @Test
     public void uploadFileShouldThrowInvalidFileInputDataExceptionAndReturnBadRequest() throws Exception {
         String filename = filename();
-        FileRequestDto fileRequestDto = fileDto();
+        MockMultipartFile file = mockMultipartFile();
 
         doThrow(InvalidFileInputDataException.class)
                 .when(filesFacade).uploadFile(anyString(), anyString(), any());
 
         mockMvc.perform(post("/cloud/file")
                         .param("filename", filename)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(new ObjectMapper().writeValueAsString(fileRequestDto)))
+                        .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
+                        .content(new ObjectMapper().writeValueAsString(file)))
                 .andExpect(status().isBadRequest());
     }
 
@@ -140,22 +144,15 @@ public class FilesControllerTest extends AbstractControllerTest {
     public void getFileShouldSuccessfullyReturnOkAndFileDto() throws Exception {
         String filename = filename();
         String userLogin = "user";
-        FileRequestDto fileRequestDto = fileDto();
+        MockMultipartFile file = mockMultipartFile();
 
-        when(filesFacade.getFile(userLogin, filename)).thenReturn(fileRequestDto);
+        when(filesFacade.getFile(userLogin, filename)).thenReturn(file.getResource());
 
-        MvcResult mvcResult = mockMvc.perform(get("/cloud/file")
+        mockMvc.perform(get("/cloud/file")
                         .queryParam("filename", filename))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andReturn();
-
-        FileRequestDto actFileRequestDto = objectMapper.readValue(mvcResult.getResponse().getContentAsString(),
-                objectMapper.getTypeFactory().constructType(FileRequestDto.class));
-
-        Assertions.assertEquals(fileRequestDto, actFileRequestDto);
-
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
     }
 
     @Test
@@ -212,7 +209,7 @@ public class FilesControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    public void renameFileShouldThrowInvalidFileInputDataExceptionAndReturnBadRequest() throws Exception{
+    public void renameFileShouldThrowInvalidFileInputDataExceptionAndReturnBadRequest() throws Exception {
         String oldFilename = filename();
         RequestRenameFileDto renameFileDto = new RequestRenameFileDto("new file.txt");
 
@@ -243,7 +240,7 @@ public class FilesControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    public void deleteFilesShouldThrowInvalidFileInputDataExceptionAndReturnBadRequest() throws Exception{
+    public void deleteFilesShouldThrowInvalidFileInputDataExceptionAndReturnBadRequest() throws Exception {
         String filename = filename();
 
         doThrow(InvalidFileInputDataException.class)
@@ -286,9 +283,19 @@ public class FilesControllerTest extends AbstractControllerTest {
             Assertions.fail();
         }
         return FileRequestDto.builder()
-                .file(binaryFile.toString())
+                .binaryStringFile(binaryFile.toString())
                 .hash(Arrays.toString(digest))
                 .build();
+    }
+
+    private MockMultipartFile mockMultipartFile() throws IOException {
+        InputStream stream = null;
+        try {
+            stream = new FileInputStream(filePath());
+        } finally {
+            stream.close();
+        }
+        return new MockMultipartFile(filename(),stream);
     }
 
     private String filename() {
