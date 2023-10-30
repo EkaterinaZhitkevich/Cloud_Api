@@ -140,7 +140,6 @@ public class CloudApiIntegrationTest extends AbstractIntegrationTest {
 
 
     public void getFileShouldSuccessfullyReturnOkAndFileDto() throws Exception {
-
         String filePath = filePaths()[0];
         String filename = filename(filePath);
         FileDto fileDto = fileDto(filePath);

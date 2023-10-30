@@ -15,7 +15,7 @@ public interface MinioService {
 
    void renameFile(String bucketName, String oldFilename, String newFilename);
 
-   void createBucket(String bucketName);
+   void createBucket(String username);
 
-   boolean isBucketExist(String bucketName);
+   boolean isBucketExist(String username);
 }

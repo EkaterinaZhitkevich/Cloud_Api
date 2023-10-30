@@ -27,7 +27,7 @@ public class FilesServiceImpl implements FilesService {
 
     private final UserService userService;
 
-    private static final String URL = "http:\\localhost:8080\\cloud\\file";
+    private static final String URL = "http:/localhost:8080/cloud/file/";
 
     @Override
     @Transactional
@@ -47,13 +47,13 @@ public class FilesServiceImpl implements FilesService {
 
     @Override
     @Transactional(rollbackFor = IOException.class)
-    public MinioFile getFile(String bucketName, String filename) throws IOException {
+    public MinioFile getFile(String username, String filename) throws IOException {
         log.info("Method get file in class {} started", getClass().getSimpleName());
 
-        if (!fileRepository.findByUserAndFilename(bucketName, filename)) {
-            throw new NoFilesFoundException(bucketName);
+        if (!fileRepository.findByUserAndFilename(username, filename)) {
+            throw new NoFilesFoundException(username);
         }
-        MinioFile file = minioService.getFile(bucketName, filename);
+        MinioFile file = minioService.getFile(username, filename);
 
         log.info("Method get file in class {} finished", getClass().getSimpleName());
         return file;
@@ -61,11 +61,11 @@ public class FilesServiceImpl implements FilesService {
 
     @Override
     @Transactional
-    public void uploadFile(String bucketName, String filename, MinioFile minioFile) {
+    public void uploadFile(String username, String filename, MinioFile minioFile) {
         log.info("Method upload file in class {} started", getClass().getSimpleName());
 
-        if (!minioService.isBucketExist(bucketName)) {
-            minioService.createBucket(bucketName);
+        if (!minioService.isBucketExist(username)) {
+            minioService.createBucket(username);
         }
 
       FileMetadata  fileMetadata = FileMetadata.builder()
@@ -75,43 +75,43 @@ public class FilesServiceImpl implements FilesService {
                 .hash(minioFile.getHash())
                 .build();
 
-        User user = userService.findUserByLogin(bucketName);
+        User user = userService.findUserByLogin(username);
         fileMetadata.setUser(user);
         fileRepository.save(fileMetadata);
-        minioService.uploadFile(bucketName, filename, minioFile);
+        minioService.uploadFile(username, filename, minioFile);
 
         log.info("Method upload file in class {} finished", getClass().getSimpleName());
     }
 
     @Override
     @Transactional
-    public void deleteFile(String bucketName, String filename) {
+    public void deleteFile(String username, String filename) {
         log.info("Method delete file in class {} started", getClass().getSimpleName());
 
-        if (!fileRepository.findByUserAndFilename(bucketName, filename)) {
-            throw new NoFilesFoundException(bucketName);
+        if (!fileRepository.findByUserAndFilename(username, filename)) {
+            throw new NoFilesFoundException(username);
         }
         fileRepository.deleteByFilenameAndExtension(getFilenameFromFullFileName(filename),
                 getExtensionFromFullFilename(filename));
-        minioService.deleteFile(bucketName, filename);
+        minioService.deleteFile(username, filename);
 
         log.info("Method delete file in class {} finished", getClass().getSimpleName());
     }
 
     @Override
     @Transactional
-    public void renameFile(String bucketName, String oldFilename, String newFilename) {
+    public void renameFile(String username, String oldFilename, String newFilename) {
         log.info("Method rename file in class {} started", getClass().getSimpleName());
 
-        if (!fileRepository.findByUserAndFilename(bucketName, oldFilename)) {
-            throw new NoFilesFoundException(bucketName);
+        if (!fileRepository.findByUserAndFilename(username, oldFilename)) {
+            throw new NoFilesFoundException(username);
         }
 
         String shortOldFileName = getFilenameFromFullFileName(oldFilename);
         String shortNewFilename = getExtensionFromFullFilename(newFilename);
 
         fileRepository.updateByFilename(shortOldFileName, shortNewFilename);
-        minioService.renameFile(bucketName, oldFilename, newFilename);
+        minioService.renameFile(username, oldFilename, newFilename);
 
         log.info("Method rename file in class {} finished", getClass().getSimpleName());
     }

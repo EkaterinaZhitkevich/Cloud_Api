@@ -12,13 +12,13 @@ public interface FileMetadataRepository extends JpaRepository<FileMetadata, Long
     void deleteByFilenameAndExtension(String filename, String extension);
 
     @Modifying
-    @Query("update FileMetadata m set  m.filename =:newFilename where m.filename =:oldFilename")
+    @Query("update FileMetadata m set m.filename = :newFilename where m.filename = :oldFilename")
     void updateByFilename(String newFilename, String oldFilename);
 
-    @Query("from FileMetadata join User u where u.login = :username")
+    @Query("from FileMetadata fm join fm.user u where u.login = :username")
     List<FileMetadata> findAllFilesByUsername(String username);
 
-    @Query("from FileMetadata m join User u where u.login =:username and m.filename =:filename")
+    @Query("from FileMetadata fm join fm.user u where u.login = :username and fm.filename = :filename")
     boolean findByUserAndFilename(String username, String filename);
 
 }

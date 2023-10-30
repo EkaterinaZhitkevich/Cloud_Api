@@ -9,14 +9,14 @@ import java.util.List;
 
 public interface FilesFacade {
 
-    List<ListFileResponseDto> getAllFilesLimit(String userLogin, Integer limit);
+    List<ListFileResponseDto> getAllFilesLimit(String username, Integer limit);
 
-    FileDto getFile(String userLogin, String filename) throws IOException;
+    FileDto getFile(String username, String filename) throws IOException;
 
-    void uploadFile(String userLogin, String filename, FileDto fileDto);
+    void uploadFile(String username, String filename, FileDto fileDto);
 
-    void deleteFile(String userLogin, String filename);
+    void deleteFile(String username, String filename);
 
-    void renameFile(String userLogin, String oldFilename, RequestRenameFileDto renameFileDto);
+    void renameFile(String username, String oldFilename, RequestRenameFileDto renameFileDto);
 
 }
