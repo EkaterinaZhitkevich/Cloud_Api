@@ -52,9 +52,11 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public String getAuthorizationToken(UserDetails user) {
+    public String getAuthorizationToken(UserDetails userDetails) {
         log.info("Method get authorization token in class {} started", getClass().getSimpleName());
 
+        User user = userRepository.findByLogin(userDetails.getUsername())
+                .orElseThrow(() -> new UserNotFoundException(userDetails.getUsername()));
         String token = jwtProvider.generateToken(user);
 
         log.info("Method get authorization token in class {} finished", getClass().getSimpleName());

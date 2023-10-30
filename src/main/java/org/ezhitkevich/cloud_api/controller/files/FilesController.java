@@ -43,10 +43,9 @@ public class FilesController{
     }
 
     @PostMapping( value = "/file", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<Void> uploadFile(@RequestParam("filename") String filename, MultipartFile file) {
+    public ResponseEntity<Void> uploadFile(@RequestParam("filename") String filename, MultipartFile file) throws IOException{
         log.info("Method upload file in class {} started", getClass().getSimpleName());
-        UserDetails principal = (UserDetails)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String username = principal.getUsername();
+        String username = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         filesFacade.uploadFile(username,filename, file);
         log.info("Method upload file in class {} finished", getClass().getSimpleName());
         return ResponseEntity.ok().build();
@@ -55,8 +54,7 @@ public class FilesController{
     @GetMapping( value = "/file", produces = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Resource> getFile(@RequestParam("filename") String filename) throws IOException {
         log.info("Method get file in class {} started", getClass().getSimpleName());
-        UserDetails principal = (UserDetails)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String username = principal.getUsername();
+        String username = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Resource resource = filesFacade.getFile(username, filename);
         log.info("Method get file in class {} finished", getClass().getSimpleName());
         return ResponseEntity.ok(resource);
@@ -66,8 +64,7 @@ public class FilesController{
     public ResponseEntity<Void> renameFile(@RequestParam("filename") String oldFilename,
                                            @RequestBody RequestRenameFileDto renameFileDto){
         log.info("Method rename file in class {} started", getClass().getSimpleName());
-        UserDetails principal = (UserDetails)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String username = principal.getUsername();
+        String username = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         filesFacade.renameFile(username, oldFilename, renameFileDto);
         log.info("Method rename file in class {} finished", getClass().getSimpleName());
         return ResponseEntity.ok().build();
@@ -76,8 +73,7 @@ public class FilesController{
     @DeleteMapping("/file")
     public ResponseEntity<Void> deleteFile(@RequestParam("filename") String filename){
         log.info("Method delete file in class {} started", getClass().getSimpleName());
-        UserDetails principal = (UserDetails)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String username = principal.getUsername();
+        String username = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         filesFacade.deleteFile(username, filename);
         log.info("Method delete file in class {} finished", getClass().getSimpleName());
         return ResponseEntity.ok().build();

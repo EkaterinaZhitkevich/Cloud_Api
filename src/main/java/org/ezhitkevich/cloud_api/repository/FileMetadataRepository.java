@@ -6,19 +6,23 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface FileMetadataRepository extends JpaRepository<FileMetadata, Long> {
 
     void deleteByFilenameAndExtension(String filename, String extension);
 
     @Modifying
-    @Query("update FileMetadata m set  m.filename =:newFilename where m.filename =:oldFilename")
-    void updateByFilename(String newFilename, String oldFilename);
+    @Query("update FileMetadata fm set fm.filename = :newFilename where fm.id = :id")
+    void updateByFilename(String newFilename, Long id);
 
-    @Query("from FileMetadata fm join fm.user u where u.login = :username")
+    @Query("from FileMetadata fm join fm.user u where u.login =:username")
     List<FileMetadata> findAllFilesByUsername(String username);
 
-    @Query("from FileMetadata m join User u where u.login =:username and m.filename =:filename")
+    @Query("from FileMetadata fm join fm.user u where u.login = :username and fm.filename = :filename")
     boolean findByUserAndFilename(String username, String filename);
 
+
+    @Query("from FileMetadata fm join fm.user u where u.login = :username and fm.filename = :filename")
+    Optional<FileMetadata> findByUsernameAndFilename(String username, String filename);
 }

@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.ezhitkevich.cloud_api.jwt.JwtProvider;
 import org.ezhitkevich.cloud_api.model.Role;
 import org.ezhitkevich.cloud_api.exception.InvalidJwtTokenException;
+import org.ezhitkevich.cloud_api.model.User;
 import org.ezhitkevich.cloud_api.properties.JwtProperties;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Component;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Component
@@ -27,14 +29,14 @@ public class JwtProviderImpl implements JwtProvider {
 
     private final JwtProperties jwtProperties;
 
-    public String generateToken(UserDetails user) {
+    public String generateToken(User user) {
         List<String> roles
-                = user.getAuthorities().stream()
+                = user.getRoles().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList());
 
         return JWT.create()
-                .withSubject(user.getUsername())
+                .withSubject(user.getLogin())
                 .withIssuedAt(new Date())
                 .withExpiresAt(new Date(System.currentTimeMillis() + jwtProperties.getLifetime().toMillis()))
                 .withClaim("roles", roles)
@@ -65,4 +67,5 @@ public class JwtProviderImpl implements JwtProvider {
         List<Role> list = roles.asList(Role.class);
         return list;
     }
+
 }

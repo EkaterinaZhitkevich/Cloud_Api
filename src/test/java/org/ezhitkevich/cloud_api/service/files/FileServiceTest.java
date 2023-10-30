@@ -111,7 +111,7 @@ public class FileServiceTest {
         User user = user();
         String filename = "file.txt";
         MinioFile minioFile = MinioFile.builder()
-                .file("1010101001010101")
+                .binaryStringFile("1010101001010101")
                 .hash("5e162148b9097f0dbff32c34657d653c")
                 .build();
         FileMetadata file = FileMetadata.builder()

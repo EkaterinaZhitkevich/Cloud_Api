@@ -92,10 +92,15 @@ public class UserServiceTest {
         UserDetails user =
                 new org.springframework.security.core.userdetails.User("user", "password",
                         List.of(new Role("USER")));
+        User user1 = User.builder().userUuid(UUID.randomUUID())
+                .login("user")
+                .password("password")
+                .roles(Set.of(new Role("USER")))
+                .build();
 
         String expectedToken = "auth-token";
 
-        when(jwtProviderImpl.generateToken(user)).thenReturn(expectedToken);
+        when(jwtProviderImpl.generateToken(user1)).thenReturn(expectedToken);
         String actualToken = userService.getAuthorizationToken(user);
 
         assertEquals(expectedToken, actualToken);

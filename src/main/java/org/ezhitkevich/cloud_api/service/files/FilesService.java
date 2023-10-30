@@ -12,7 +12,7 @@ public interface FilesService {
 
     MinioFile getFile(String bucketName, String filename) throws IOException;
 
-    void uploadFile(String bucketName, String filename, MinioFile minioFile);
+    void uploadFile(String bucketName, String filename, MinioFile minioFile) throws IOException;
 
     void deleteFile(String bucketName, String filename);
 

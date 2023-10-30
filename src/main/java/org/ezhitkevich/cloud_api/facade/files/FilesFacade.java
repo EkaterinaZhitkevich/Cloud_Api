@@ -12,12 +12,12 @@ public interface FilesFacade {
 
     List<ListFileResponseDto> getAllFilesLimit(String userLogin, Integer limit);
 
-    Resource getFile(String userLogin, String filename) throws IOException;
+    Resource getFile(String username, String filename) throws IOException;
 
-    void uploadFile(String userLogin, String filename, MultipartFile file);
+    void uploadFile(String username, String filename, MultipartFile file) throws IOException;
 
-    void deleteFile(String userLogin, String filename);
+    void deleteFile(String username, String filename);
 
-    void renameFile(String userLogin, String oldFilename, RequestRenameFileDto renameFileDto);
+    void renameFile(String username, String oldFilename, RequestRenameFileDto renameFileDto);
 
 }

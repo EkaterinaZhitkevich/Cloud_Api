@@ -11,24 +11,21 @@ import io.minio.RemoveObjectArgs;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.ezhitkevich.cloud_api.exception.InvalidFileInputDataException;
-import org.ezhitkevich.cloud_api.model.FileMetadata;
 import org.ezhitkevich.cloud_api.model.MinioFile;
 import org.ezhitkevich.cloud_api.service.files.MinioService;
-import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.MessageDigest;
 import java.util.Arrays;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
-@PropertySource("classpath:minio/minio.properties")
 public class MinioServiceImpl implements MinioService {
 
     private final MinioClient minioClient;
@@ -74,12 +71,13 @@ public class MinioServiceImpl implements MinioService {
     public void uploadFile(String bucketName, String filename, MinioFile minioFile) {
         log.info("Method upload file in class {} started", getClass().getSimpleName());
 
-        try (InputStream stream = new FileInputStream(minioFile.getResource().getFile())) {
 
+        try {
             minioClient.putObject(PutObjectArgs.builder()
                     .bucket(bucketName)
                     .object(filename)
-                    .stream(stream, stream.available(), -1)
+                    .stream(minioFile.getResource().getInputStream(),
+                            minioFile.getResource().contentLength(), -1)
                     .build());
 
             log.info("Method upload file in class {} finished", getClass().getSimpleName());
@@ -131,7 +129,8 @@ public class MinioServiceImpl implements MinioService {
 
     }
 
-    public void createBucket(String bucketName) {
+    public void createBucket(String username) {
+        String bucketName = createValidBucketName(username);
         try {
             minioClient.makeBucket(MakeBucketArgs.builder()
                     .bucket(bucketName)
@@ -141,7 +140,8 @@ public class MinioServiceImpl implements MinioService {
         }
     }
 
-    public boolean isBucketExist(String bucketName) {
+    public boolean isBucketExist(String username) {
+        String bucketName = createValidBucketName(username);
         boolean isBucketExist;
         try {
             isBucketExist = minioClient.bucketExists(BucketExistsArgs.builder()
@@ -162,6 +162,11 @@ public class MinioServiceImpl implements MinioService {
         }
 
         return binaryFile.toString();
+    }
+
+    private String createValidBucketName(String username){
+        int randomNumberOfBucket = ThreadLocalRandom.current().nextInt(10, 5000);
+        return username.toLowerCase().concat("-").concat(String.valueOf(randomNumberOfBucket));
     }
 
 

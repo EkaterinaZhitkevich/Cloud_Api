@@ -23,11 +23,11 @@ public class FilesFacadeImpl implements FilesFacade {
     private final FilesService filesService;
 
     @Override
-    public List<ListFileResponseDto> getAllFilesLimit(String userLogin, Integer limit) {
+    public List<ListFileResponseDto> getAllFilesLimit(String username, Integer limit) {
         log.info("Method get all files limit in class {} started", getClass().getSimpleName());
 
 
-        List<FileMetadata> filesLimit = filesService.getAllFilesLimit(userLogin, limit);
+        List<FileMetadata> filesLimit = filesService.getAllFilesLimit(username, limit);
         List<ListFileResponseDto> fileResponseDtos = filesLimit.stream().map(fileMetadata -> ListFileResponseDto.builder()
                 .filename(fileMetadata.getFilename().concat(fileMetadata.getExtension()))
                 .size(fileMetadata.getSize())
@@ -38,41 +38,41 @@ public class FilesFacadeImpl implements FilesFacade {
     }
 
     @Override
-    public Resource getFile(String userLogin, String filename) throws IOException {
+    public Resource getFile(String username, String filename) throws IOException {
         log.info("Method get file in class {} started", getClass().getSimpleName());
 
-        MinioFile file = filesService.getFile(userLogin, filename);
+        MinioFile file = filesService.getFile(username, filename);
 
         log.info("Method get file in class {} finished", getClass().getSimpleName());
         return file.getResource();
     }
 
     @Override
-    public void uploadFile(String userLogin, String filename, MultipartFile file) {
+    public void uploadFile(String username, String filename, MultipartFile file) throws IOException {
         log.info("Method upload file in class {} started", getClass().getSimpleName());
 
         MinioFile minioFile = MinioFile.builder()
                 .resource(file.getResource())
                 .build();
-        filesService.uploadFile(userLogin, filename, minioFile);
+        filesService.uploadFile(username, filename, minioFile);
 
         log.info("Method upload file in class {} finished", getClass().getSimpleName());
     }
 
     @Override
-    public void deleteFile(String userLogin, String filename) {
+    public void deleteFile(String username, String filename) {
         log.info("Method delete file in class {} started", getClass().getSimpleName());
 
-        filesService.deleteFile(userLogin, filename);
+        filesService.deleteFile(username, filename);
 
         log.info("Method delete file in class {} finished", getClass().getSimpleName());
     }
 
     @Override
-    public void renameFile(String userLogin, String oldFilename, RequestRenameFileDto renameFileDto) {
+    public void renameFile(String username, String oldFilename, RequestRenameFileDto renameFileDto) {
         log.info("Method rename file in class {} started", getClass().getSimpleName());
 
-        filesService.renameFile(userLogin, oldFilename, renameFileDto.getNewFileName());
+        filesService.renameFile(username, oldFilename, renameFileDto.getNewFileName());
 
         log.info("Method rename file in class {} finished", getClass().getSimpleName());
     }
