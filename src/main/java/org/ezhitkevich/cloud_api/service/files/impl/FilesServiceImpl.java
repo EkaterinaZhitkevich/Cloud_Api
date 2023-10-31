@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -49,8 +50,10 @@ public class FilesServiceImpl implements FilesService {
     @Transactional(rollbackFor = IOException.class)
     public MinioFile getFile(String username, String filename) throws IOException {
         log.info("Method get file in class {} started", getClass().getSimpleName());
+        String shortFilename = getFilenameFromFullFileName(filename);
+        String extension = getExtensionFromFullFilename(filename);
 
-        if (!fileRepository.findByUserAndFilename(username, filename)) {
+        if (fileRepository.findByUsernameAndFilenameAndExtension(username, shortFilename, extension).isEmpty()) {
             throw new NoFilesFoundException(username);
         }
         MinioFile file = minioService.getFile(username, filename);
@@ -87,8 +90,10 @@ public class FilesServiceImpl implements FilesService {
     @Transactional
     public void deleteFile(String username, String filename) {
         log.info("Method delete file in class {} started", getClass().getSimpleName());
+        String shortFilename = getFilenameFromFullFileName(filename);
+        String extension = getExtensionFromFullFilename(filename);
 
-        if (!fileRepository.findByUserAndFilename(username, filename)) {
+        if (fileRepository.findByUsernameAndFilenameAndExtension(username, shortFilename, extension).isEmpty()) {
             throw new NoFilesFoundException(username);
         }
 
@@ -105,10 +110,11 @@ public class FilesServiceImpl implements FilesService {
         log.info("Method rename file in class {} started", getClass().getSimpleName());
 
         String shortOldFileName = getFilenameFromFullFileName(oldFilename);
-        String shortNewFilename = getExtensionFromFullFilename(newFilename);
-        FileMetadata fileMetadata = fileRepository.findByUsernameAndFilename(username, shortOldFileName)
+        String shortNewFilename = getFilenameFromFullFileName(newFilename);
+        String fileExtension = getExtensionFromFullFilename(oldFilename);
+        FileMetadata fileMetadata = fileRepository.findByUsernameAndFilenameAndExtension(username, shortOldFileName, fileExtension)
                 .orElseThrow(() -> new NoFilesFoundException(username));
-        fileRepository.updateByFilename(shortNewFilename, fileMetadata.getId());
+        fileMetadata.setFilename(shortNewFilename);
         minioService.renameFile(username, oldFilename, newFilename);
 
         log.info("Method rename file in class {} finished", getClass().getSimpleName());

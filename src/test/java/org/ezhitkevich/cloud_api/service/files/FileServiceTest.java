@@ -19,11 +19,18 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyLong;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class FileServiceTest {
@@ -73,7 +80,7 @@ public class FileServiceTest {
     }
 
     @Test
-    public void getAllFilesShouldThrowNoFilesFoundException(){
+    public void getAllFilesShouldThrowNoFilesFoundException() {
         User user = user();
         when(fileMetadataRepository.findAllFilesByUsername(user.getLogin())).thenThrow(NoFilesFoundException.class);
 
@@ -85,7 +92,7 @@ public class FileServiceTest {
         User user = user();
         String filename = "file.txt";
         MinioFile file = MinioFile.builder()
-                .file("1010101001010101")
+                .binaryStringFile("1010101001010101")
                 .hash("5e162148b9097f0dbff32c34657d653c")
                 .build();
 
@@ -97,7 +104,7 @@ public class FileServiceTest {
     }
 
     @Test
-    public void getFileShouldThrowNoFilesFoundException() throws IOException{
+    public void getFileShouldThrowNoFilesFoundException() throws IOException {
         User user = user();
         String filename = "file.txt";
 
@@ -107,26 +114,15 @@ public class FileServiceTest {
     }
 
     @Test
-    public void uploadFileShouldSuccessfullyWork(){
-        User user = user();
+    public void uploadFileShouldSuccessfullyWork() throws IOException{
         String filename = "file.txt";
         MinioFile minioFile = MinioFile.builder()
                 .binaryStringFile("1010101001010101")
                 .hash("5e162148b9097f0dbff32c34657d653c")
                 .build();
-        FileMetadata file = FileMetadata.builder()
-                .fileUuid(UUID.randomUUID())
-                .filename("file")
-                .extension(".txt")
-                .url("http://localhost:8080/cloud/file/file.txt")
-                .size(52L)
-                .user(user).build();
 
-
-        when(minioService.uploadFile(user.getLogin(), filename, minioFile)).thenReturn(file);
-        
         filesService.uploadFile(user().getLogin(), filename, minioFile);
-        
+
         verify(minioService).uploadFile(anyString(), anyString(), fileArgumentCaptor.capture());
         verify(userService, times(1)).findUserByLogin(anyString());
         verify(fileMetadataRepository, times(1)).save(any(FileMetadata.class));
@@ -137,12 +133,15 @@ public class FileServiceTest {
     }
 
     @Test
-    public void deleteFileShouldSuccessfullyWork(){
+    public void deleteFileShouldSuccessfullyWork() {
         User user = user();
         String filename = "file.txt";
         String shortFilename = "file";
+        String fileExtension = ".txt";
+        FileMetadata fileMetadata = fileMetadata();
 
-        when(fileMetadataRepository.findByUserAndFilename(user.getLogin(), filename)).thenReturn(true);
+        when(fileMetadataRepository.findByUsernameAndFilenameAndExtension(user.getLogin(), shortFilename, fileExtension))
+                .thenReturn(Optional.of(fileMetadata));
 
         filesService.deleteFile(user.getLogin(), filename);
 
@@ -154,37 +153,45 @@ public class FileServiceTest {
     }
 
     @Test
-    public void deleteFileShouldThrowNoFilesFoundException(){
+    public void deleteFileShouldThrowNoFilesFoundException() {
         User user = user();
         String filename = "file.txt";
+        String shortFilename = "file";
+        String fileExtension = ".txt";
 
-        when(fileMetadataRepository.findByUserAndFilename(user.getLogin(), filename))
-                .thenReturn(false);
+        when(fileMetadataRepository.findByUsernameAndFilenameAndExtension(user.getLogin(), shortFilename, fileExtension))
+                .thenReturn(Optional.empty());
 
         assertThrows(NoFilesFoundException.class, () -> filesService.deleteFile(user.getLogin(), filename));
     }
 
     @Test
-    public void renameFileShouldSuccessfullyWork(){
+    public void renameFileShouldSuccessfullyWork() {
         User user = user();
         String oldFilename = "file.txt";
+        String shortOldFilename = "file";
         String newFileName = "file_2.txt";
+        String fileExtension = ".txt";
+        FileMetadata fileMetadata = fileMetadata();
 
-        when(fileMetadataRepository.findByUserAndFilename(user.getLogin(), oldFilename)).thenReturn(true);
+        when(fileMetadataRepository.findByUsernameAndFilenameAndExtension(user.getLogin(), shortOldFilename, fileExtension))
+                .thenReturn(Optional.of(fileMetadata));
 
         filesService.renameFile(user.getLogin(), oldFilename, newFileName);
 
-        verify(fileMetadataRepository, times(1)).updateByFilename(anyString(), anyString());
+        verify(minioService, times(1)).renameFile(anyString(), anyString(), anyString());
     }
 
     @Test
-    public void renameFileShouldThrowNoFilesFoundException(){
+    public void renameFileShouldThrowNoFilesFoundException() {
         User user = user();
         String oldFilename = "file.txt";
+        String shortOldFilename = "file";
         String newFileName = "file_2.txt";
+        String fileExtension = ".txt";
 
-        when(fileMetadataRepository.findByUserAndFilename(user.getLogin(), oldFilename))
-                .thenThrow(NoFilesFoundException.class);
+        when(fileMetadataRepository.findByUsernameAndFilenameAndExtension(user.getLogin(), shortOldFilename, fileExtension))
+                .thenReturn(Optional.empty());
 
         assertThrows(NoFilesFoundException.class, () -> filesService.renameFile(user.getLogin(), oldFilename, newFileName));
     }
@@ -196,5 +203,15 @@ public class FileServiceTest {
                 .userUuid(UUID.randomUUID())
                 .roles(Set.of(new Role("USER")))
                 .build();
+    }
+
+    private FileMetadata fileMetadata() {
+        return FileMetadata.builder()
+                .fileUuid(UUID.randomUUID())
+                .filename("file")
+                .extension(".txt")
+                .url("http://localhost:8080/cloud/file/file.txt")
+                .size(52L)
+                .user(user()).build();
     }
 }

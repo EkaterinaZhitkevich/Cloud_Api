@@ -1,5 +1,6 @@
 package org.ezhitkevich.cloud_api.controller.files;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.ezhitkevich.cloud_api.dto.response.ListFileResponseDto;
@@ -64,6 +65,7 @@ public class FilesController{
     public ResponseEntity<Void> renameFile(@RequestParam("filename") String oldFilename,
                                            @RequestBody RequestRenameFileDto renameFileDto){
         log.info("Method rename file in class {} started", getClass().getSimpleName());
+        System.out.println(renameFileDto.toString());
         String username = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         filesFacade.renameFile(username, oldFilename, renameFileDto);
         log.info("Method rename file in class {} finished", getClass().getSimpleName());

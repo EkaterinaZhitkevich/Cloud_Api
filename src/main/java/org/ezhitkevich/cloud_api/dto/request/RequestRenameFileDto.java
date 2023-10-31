@@ -10,6 +10,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class RequestRenameFileDto {
 
-    @JsonProperty("name")
+    @JsonProperty("filename")
     private String newFileName;
 }

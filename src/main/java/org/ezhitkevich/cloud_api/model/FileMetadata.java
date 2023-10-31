@@ -24,7 +24,6 @@ import java.util.UUID;
 @Builder
 @Entity
 @Table(schema = "cloud_api")
-@DynamicUpdate
 public class FileMetadata {
 
     @Id
